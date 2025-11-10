@@ -1,0 +1,31 @@
+# .ado/templates/build.yml
+
+parameters:
+- name: pipelineName
+  type: string
+  default: 'UnknownPipeline'
+- name: buildConfiguration
+  type: string
+  default: 'Release'
+
+steps:
+- script: |
+    echo "Build template running for: ${{ parameters.pipelineName }}"
+    echo "PR ID (if present): $(System.PullRequest.PullRequestId)"
+  displayName: 'Template Info'
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '9.0.x'
+
+- script: |
+    dotnet build --configuration ${{ parameters.buildConfiguration }}
+    dotnet publish --configuration ${{ parameters.buildConfiguration }} --no-build --output $(Build.ArtifactStagingDirectory)/publish
+  displayName: 'Build and Publish .NET Applications'
+    
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

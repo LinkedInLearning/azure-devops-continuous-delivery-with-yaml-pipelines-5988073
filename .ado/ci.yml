@@ -1,0 +1,53 @@
+# CI.YML - ASP.NET Core CI Pipeline
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Publishes build artifacts for deployment pipeline consumption.
+# Triggers on all branches for continuous integration.
+ 
+trigger:
+- '*'
+
+name: CI-$(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  displayName: Build
+  variables:
+  - group: myVarGroup
+  jobs:
+  - job: BuildPublish
+    displayName: Restore / Build / Test / Publish
+    steps:
+    - script: |
+        echo 'myAppName: $(myAppName) -- mySecret: $(mySecret)'
+    - template: templates/build.yml
+      parameters:
+        pipelineName: 'CI Pipeline'
+        buildConfiguration: $(buildConfiguration)
+
+
+    # - task: UseDotNet@2
+    #   inputs:
+    #     packageType: 'sdk'
+    #     version: '9.0.x'
+
+
+    # - script: dotnet build --configuration $(buildConfiguration)
+    #   displayName: 'dotnet build $(buildConfiguration)'
+
+    # - task: DotNetCoreCLI@2
+    #   inputs:
+    #     command: 'publish'
+    #     publishWebProjects: true
+    #     arguments: '--configuration $(buildConfiguration) --no-build -o $(Build.ArtifactStagingDirectory)/publish'
+        
+    # - task: PublishBuildArtifacts@1
+    #   inputs:
+    #     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    #     ArtifactName: 'drop'
+    #     publishLocation: 'Container'
