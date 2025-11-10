@@ -1,0 +1,88 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: 'Release'
+  rgGroup: 'lil-$(myApp)-rg'
+
+stages:
+- stage: BuildAndTest
+  jobs:
+  - job: dotnet
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '9.0.x'
+
+    - task: replacetokens@6
+      inputs:
+        sources: '**/*.cshtml'
+
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build $(buildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --no-build -o $(Build.ArtifactStagingDirectory)/publish'
+        
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Infra
+  jobs:
+  - job: BicepDeploy
+    steps:
+    - script: echo 'Add deployment for $(myApp) with the secret --> $(mySecret) <--' 
+    - task: AzureResourceManagerTemplateDeployment@3
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: '<AzureSubscription>'
+        subscriptionId: '<AZURE_SUBSCRIPTION_ID>'
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: 'lil-myYAML-rg'
+        location: 'Central US'
+        templateLocation: 'Linked artifact'
+        csmFile: 'infra/myYaml-Slots.bicep'
+        csmParametersFile: 'infra/myYaml-Slots.dev.bicepparam'
+        overrideParameters: '-envName Dev'
+        deploymentMode: 'Incremental'
+ 
+
+- stage: Deploy
+  jobs:
+  - job: deployToAzure
+    steps:
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        
+    - task: AzureRmWebAppDeployment@5
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: '<AzureSubscription>'
+        appType: 'webAppLinux'
+        WebAppName: 'myYAML-dev'
+        deployToSlotOrASE: true
+        ResourceGroupName: '$(rgGroup)'
+        SlotName: 'staging'
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+        RuntimeStack: 'DOTNETCORE|9.0'
+        DeploymentTypeLinux: 'zipDeploy'
+        
