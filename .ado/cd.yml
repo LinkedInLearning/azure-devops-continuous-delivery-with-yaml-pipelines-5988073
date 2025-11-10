@@ -1,0 +1,38 @@
+# CD.YML - ASP.NET Core CD Pipeline
+# Deploy the CI artifact to Azure App Service staging slot.
+# Triggers automatically when CI pipeline completes successfully on dev branch. 
+
+resources:
+  pipelines:
+  - pipeline: ci
+    source: ci
+    trigger:
+      branches:
+        include:
+        - dev
+        - main
+
+name: CD-$(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Dev
+  jobs:
+  - job: DeployDev
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: echo 'Deploy to Dev'
+
+- stage: Production
+  jobs:
+  - deployment: DeployProduction
+    environment: 'prod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo 'Deploy to Prod'
+
