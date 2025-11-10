@@ -1,0 +1,23 @@
+# PR Slot Cleanup Pipeline
+# Runs nightly to clean up orphaned slots
+
+schedules:
+- cron: "5 * * * *"   # Run every 5 minutes for demo purposes
+  displayName: Cleanup
+  branches:
+    include:
+      - main
+  always: true
+
+name: CLEANUP-$(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Cleanup
+  jobs:
+  - job: RemoveOldSlots
+    steps:
+    - script: echo "Checking for orphaned PR slots..."
+    - script: echo "Deleting slots with no active PR..."
