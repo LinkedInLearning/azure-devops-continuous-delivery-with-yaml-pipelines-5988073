@@ -1,5 +1,5 @@
-# COURSENAME
-This is the repository for the LinkedIn Learning course `course-name`. The full course is available from [LinkedIn Learning][lil-course-url].
+# Azure DevOps: Continuous Delivery with YAML Pipelines
+This is the repository for the LinkedIn Learning course `Azure DevOps: Continuous Delivery with YAML Pipelines`. The full course is available from [LinkedIn Learning][lil-course-url].
 
 ![lil-thumbnail-url]
 
