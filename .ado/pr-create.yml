@@ -1,0 +1,33 @@
+# Create Pull Request Pipeline
+# Build and deploy to a PR-specific slot
+# Triggered automatically on PRs to main
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+      - dev
+
+name: PR-$(System.PullRequest.PullRequestId)
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: PRDeploy
+  jobs:
+  - job: DeployPR
+    steps:  
+
+    - template: templates/build.yml
+      parameters:
+        pipelineName: 'CI Pipeline'
+        buildConfiguration: $(buildConfiguration)
+
+    - script: |
+        echo "# --TODO-- Create slot and deploy to it. Approximate deployment script below"
+        echo "az app slot create --slot-name pr-$(System.PullRequest.PullRequestId)"
+        echo "az webapp deploy ..."
+      displayName: 'Deploy to PR Slot'

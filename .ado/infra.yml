@@ -1,0 +1,33 @@
+# INFRA.YML - Azure Infrastructure Pipeline
+# Deploy and manage Azure infrastructure using Bicep templates.
+# Triggers automatically when CI completes and infra folder has changes.
+# Can also be run manually when needed.
+
+trigger:
+- none
+
+# trigger:
+#   paths:
+#     include:
+#     - infra/*
+#   branches:
+#     include:
+#     - '*'
+
+name: INFRA-$(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  appName: 'myYAML'
+
+stages:
+- stage: Infra
+  jobs:
+  - job: DeployIaC
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: echo 'Deploy Bicep here'
+
