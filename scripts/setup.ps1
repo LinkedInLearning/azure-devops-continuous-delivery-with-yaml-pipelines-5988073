@@ -1,4 +1,4 @@
-git remote add origin https://imademo@dev.azure.com/imademo/Learn-YamlPipelines/_git/Learn-YamlPipelines
+# Add remote
 git push -u origin --all
 
 dotnet new webapp -o src/myApp
